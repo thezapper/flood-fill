@@ -1,31 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { SketchPicker, MaterialPicker, BlockPicker, TwitterPicker } from 'react-color'
-import { makeStyles, recomposeColor } from '@material-ui/core/styles';
+import { SketchPicker } from 'react-color'
+//import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
-const useStyles = makeStyles({
-  root: 
-  {
-    position: "absolute",
-    //width: 300,
-    top: 10,
-    //left: 10,
-    right:'50%',
-    transform: 'translate(-420px, 0)',
-    padding: 10,
-    border: '2px rgb(200, 200, 200) solid',
-    borderRadius: 10,
-    zIndex:999
-  },
-});
+// const useStyles = makeStyles({
+//   root: 
+//   {
+//     position: "absolute",
+//     //width: 300,
+//     top: 10,
+//     //left: 10,
+//     right:'50%',
+//     transform: 'translate(-420px, 0)',
+//     padding: 10,
+//     border: '2px rgb(200, 200, 200) solid',
+//     borderRadius: 10,
+//     zIndex:999
+//   },
+// });
 
 function Options(props) 
 {
-    const classes = useStyles();
+    //const classes = useStyles();
 
     const [colour, setColour] = useState(props.colours.filled);
     const [whichCol, setWhichCol] = useState('filled');
@@ -59,7 +59,8 @@ function Options(props)
     const stl = {backgroundColor:colour};
     
     return (
-        <div className={classes.root}>
+        // <div className={classes.root}>
+        <div>
 
             <Typography variant='h4' id="discrete-slider" gutterBottom>Grid Fill Demo</Typography>
             <Typography variant='h6' id="discrete-slider" gutterBottom>
@@ -91,7 +92,6 @@ function Options(props)
                 className='picker' 
                 onChangeComplete={ (e) => handleChangeComplete(e) }
                 color={colour}/> 
-                
                 
         </div>
         );

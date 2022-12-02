@@ -1,6 +1,6 @@
 import React from 'react';
 import {Grid} from './Grid.jsx'
-import {Options} from './Options.jsx'
+//import {Options} from './Options.jsx'
 
 const DEFAULT_GRID_SIZE = 10;
 
@@ -74,11 +74,11 @@ export default class MyApplication extends React.Component
     {
         return (
             <div>
-                <Options 
+                {/* <Options 
                     defaultGridSize={DEFAULT_GRID_SIZE}
                     newGridSize={this.onNewGridSize}
                     colourChange={this.onColourChange}
-                    colours={this.state.colours} />
+                    colours={this.state.colours} /> */}
 
                 <Grid 
                     gridData={this.state.gridData} 
