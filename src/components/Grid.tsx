@@ -1,64 +1,23 @@
+import { type } from 'os';
 import React, { useState, useEffect } from 'react';
-
-const BLANK = 0;
-const FILLED = 1;
-const SELECTED = 2;
-
-function Cell(props)
-{
-    const [className, setClass] = useState('cell');
-
-    let posStl = 
-    {
-        left:   props.data.x * (props.data.width + 0) + 'px',
-        top:    props.data.y * (props.data.height + 0) + 'px',
-        width:  props.data.width + 'px',
-        height: props.data.height + 'px',
-        backgroundColor: props.data.colour.hex,
-        borderRadius: props.data.width / 2 +'px'
-    }
-
-    const onMouseEnter = (e) =>
-    {
-        props.data.fillFunc(props.data.x, props.data.y);
-        setClass('cell-hover');
-    }
-
-    const onMouseLeave = (e) =>
-    {
-        props.data.clearFunc(props.data.x, props.data.y);
-        setClass('cell');
-    }
-
-    const onMouseDown = (e) =>
-    {
-        if (props.data.cellValue === BLANK)
-            return;
-
-        props.data.clickFunc(props.data.x, props.data.y);
-    }
-
-    return (
-        <div className={className} 
-            style={posStl}
-            onMouseEnter={ (e) => onMouseEnter(e) } 
-            onMouseLeave={ (e) => onMouseLeave(e) }
-            onMouseDown= { (e) => onMouseDown(e)  }
-            > 
-                <div className='cell-text'>{props.data.text}</div>
-        </div>
-    );
-}
+import { Cell, E_CELL, cell_props, colours } from './Cell';
 
 let count = 0;
-function Grid(props) 
+
+export interface grid_props
+{
+  gridData: any;
+  cols: colours;
+}
+
+export function Grid(props: grid_props) 
 {
     const [gridState, setNewGridData] = useState(props.gridData);
     const [selected, selectCell] = useState({x:-1, y:-1});
-    const [storedCount, setCount] = useState('');
+    const [storedCount, setCount] = useState(0);
     const [divWidth, setWidth] = useState(0);
     const [divHeight, setHeight] = useState(0);
-    const GRID_DIM = props.gridData[0].length;
+    const GRID_DIM: number = props.gridData[0].length;
 
     useEffect(() => 
     {
@@ -90,22 +49,28 @@ function Grid(props)
             const curRow = gridState[y];
             for (let x= 0; x < GRID_DIM; x++)
             {
-                if (curRow[x] === SELECTED)
-                    curRow[x] = FILLED;
+                if (curRow[x] === E_CELL.SELECTED)
+                    curRow[x] = E_CELL.FILLED;
             }
         }
 
         setNewGridData([...gridState]);
     }
 
-    function floodFill(col, row) // x=col, y=row
+    type coord =
     {
-        let queue = [];
+      x: number;
+      y: number;
+    }
+
+    function floodFill(col: number, row: number) // x=col, y=row
+    {
+        let queue = new Array<coord>;
         let grid = props.gridData;
         const cellValue = grid[row][col];
         
         // ignore blanks and already coloured
-        if (cellValue === BLANK || cellValue === SELECTED)
+        if (cellValue === E_CELL.BLANK || cellValue === E_CELL.SELECTED)
         {
             console.log("nothing to do");
             return;
@@ -113,9 +78,9 @@ function Grid(props)
         
         console.log("Reset count");
         count = 0;
-        if (cellValue === FILLED)
+        if (cellValue === E_CELL.FILLED)
         {
-            grid[row][col] = SELECTED;
+            grid[row][col] = E_CELL.SELECTED;
             queue.push({x:col, y:row});
             count++;
         }
@@ -126,60 +91,60 @@ function Grid(props)
             // using an array like a queue with push and shift.
             // Shift will remove the oldest element instead of pop which will remove the most recent
             let currentCell = queue.shift();
-            let x = currentCell.x;
-            let y = currentCell.y;
+            let x = currentCell?.x ? currentCell.x : 0;
+            let y = currentCell?.y ? currentCell.y : 0;
             // Now check neighbours.  
             // When indexing the array we dont need to make sure we have a valid index,
             // JavaScript will return 'undefined' for elements outside the array which
             // will subsequently fail the comparison to 'FILLED' and be ignored.
             
             // West
-            let checkX = currentCell.x - 1;
-            let checkY = currentCell.y;
-            if (checkY < GRID_DIM && checkY >= 0)
+            let checkX = x - 1;
+            let checkY = y;
+            if ( (checkY < GRID_DIM) && (checkY >= 0) )
             {
-                if (grid[checkY][checkX] == FILLED)
+                if (grid[checkY][checkX] == E_CELL.FILLED)
                 {
-                    grid[checkY][checkX] = SELECTED;
+                    grid[checkY][checkX] = E_CELL.SELECTED;
                     queue.push({x:checkX, y:checkY});
                     count++;
                 }
             }
             
             // East
-            checkX = currentCell.x + 1;
-            checkY = currentCell.y;
+            checkX = x + 1;
+            checkY = y;
             if (checkY < GRID_DIM && checkY >= 0)
             {
-                if (grid[checkY][checkX] == FILLED)
+                if (grid[checkY][checkX] == E_CELL.FILLED)
                 {
-                    grid[checkY][checkX] = SELECTED;
+                    grid[checkY][checkX] = E_CELL.SELECTED;
                     queue.push({x:checkX, y:checkY});
                     count++;
                 }
             }
             
             // North
-            checkX = currentCell.x;
-            checkY = currentCell.y-1;
+            checkX = x;
+            checkY = y - 1;
             if (checkY < GRID_DIM && checkY >= 0)
             {
-                if (grid[checkY][checkX] == FILLED)
+                if (grid[checkY][checkX] == E_CELL.FILLED)
                 {
-                    grid[checkY][checkX] = SELECTED;
+                    grid[checkY][checkX] = E_CELL.SELECTED;
                     queue.push({x:checkX, y:checkY});
                     count++;
                 }
             }
             
             // South
-            checkX = currentCell.x;
-            checkY = currentCell.y+1;
+            checkX = x;
+            checkY = y + 1;
             if (checkY < GRID_DIM && checkY >= 0)
             {
-                if (grid[checkY][checkX] == FILLED)
+                if (grid[checkY][checkX] == E_CELL.FILLED)
                 {
-                    grid[checkY][checkX] = SELECTED;
+                    grid[checkY][checkX] = E_CELL.SELECTED;
                     queue.push({x:checkX, y:checkY});
                     count++;
                 }
@@ -192,14 +157,28 @@ function Grid(props)
         console.log(count);
     }
 
-    function cellClicked(col, row) // x=col, y=row
+    function cellClicked(col:number, row:number) // x=col, y=row
     {
         console.log(col, row);
         selectCell({x:col, y:row});
         setCount(count);
     }
+
+    // type cell_props = 
+    // {
+    //   x: number,
+    //   y: number,
+    //   width: number,
+    //   height: number,
+    //   cellValue: number,
+    //   colour: string,
+    //   fillFunc: (col:number, row:number) => void,
+    //   clearFunc: () => void,
+    //   clickFunc: (col:number, row:number) => void,
+    //   text: string
+    // }
     
-    let cells = new Array;
+    let cells = new Array<cell_props>;
     let cellWidth = divWidth / GRID_DIM;
     let cellHeight = divHeight / GRID_DIM;
     
@@ -212,28 +191,29 @@ function Grid(props)
         for (let x= 0; x < gridState.length; x++)
         {
             
-            let cellProps = 
+            let cellProps : cell_props = 
             {
                 x: x,
                 y: y,
                 width:  cellWidth,                        
                 height: cellHeight,
                 cellValue: curRow[x],
-                colour: props.colours.empty,
+                colour: props.cols.empty,
                 fillFunc: floodFill,
                 clearFunc: clearFill,
-                clickFunc: cellClicked
+                clickFunc: cellClicked,
+                text: ''
             };
             
             if (x === selected.x && y === selected.y)
             {
-                cellProps.text = storedCount;
+                cellProps.text = storedCount.toString();
             }
 
-            if (curRow[x] === FILLED)
-                cellProps.colour = props.colours.filled;
-            else if (curRow[x] === SELECTED)
-                cellProps.colour = props.colours.hover;
+            if (curRow[x] === E_CELL.FILLED)
+                cellProps.colour = props.cols.filled;
+            else if (curRow[x] === E_CELL.SELECTED)
+                cellProps.colour = props.cols.hover;
 
             cells.push(cellProps);
         }
@@ -244,12 +224,7 @@ function Grid(props)
         <div 
             id='grid' 
             className='grid'>
-            {cells.map ( (c) => <Cell key={`${c.x}_${c.y}`} data={c}/>) }
+            {cells.map ( (c) => <Cell key={`${c.x}_${c.y}`} {...c}/>) }
         </div>
         );
-}
-
-export
-{
-    Grid,
 }
